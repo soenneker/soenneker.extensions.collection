@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Soenneker.Extensions.Enumerable;
+// ReSharper disable PossibleMultipleEnumeration
 
 namespace Soenneker.Extensions.Collection;
 
@@ -9,19 +10,38 @@ namespace Soenneker.Extensions.Collection;
 public static class CollectionExtension
 {
     /// <summary>
-    /// Simple foreach over toRemove collection, removing each from the target. This method is safe; no exceptions will be thrown if the collection or the enumerable is null or empty.
+    /// Removes all elements in the <paramref name="toRemove"/> enumerable from the specified <paramref name="collection"/>.
     /// </summary>
+    /// <typeparam name="T">The type of elements in the collection.</typeparam>
+    /// <param name="collection">The collection to remove elements from.</param>
+    /// <param name="toRemove">The enumerable of items to remove.</param>
     public static void RemoveEnumerableFromCollection<T>(this ICollection<T>? collection, IEnumerable<T>? toRemove)
     {
-        if (collection.IsNullOrEmpty())
+        // Null or empty checks for collection and toRemove
+        if (collection is null || collection.Count == 0)
             return;
 
-        if (toRemove.IsNullOrEmpty())
+        if (toRemove is null)
             return;
 
+        // Optimize for cases where toRemove is a HashSet for fast lookups
+        if (toRemove is ICollection<T> {Count: 0})
+            return;
+
+        // Use HashSet to optimize repeated `Remove` operations for large `toRemove` enumerables
+        HashSet<T>? removalSet = null;
+        if (toRemove is not ICollection<T>)
+        {
+            removalSet = [..toRemove];
+        }
+
+        // Perform removal directly or using the HashSet for efficiency
         foreach (T item in toRemove)
         {
-            collection.Remove(item);
+            if (removalSet is null || removalSet.Contains(item))
+            {
+                collection.Remove(item);
+            }
         }
     }
 
