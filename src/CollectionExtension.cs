@@ -59,7 +59,7 @@ public static class CollectionExtension
     /// <param name="item">The item to add to the collection if it is not null.</param>
     public static void AddIfNotNull<T>(this ICollection<T> collection, T? item)
     {
-        if (item == null)
+        if (item is null)
             return;
 
         collection.Add(item);
