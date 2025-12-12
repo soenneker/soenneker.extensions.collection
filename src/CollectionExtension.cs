@@ -29,16 +29,33 @@ public static class CollectionExtension
             return;
 
         // Use HashSet to optimize repeated `Remove` operations for large `toRemove` enumerables
-        HashSet<T>? removalSet = null;
+        // If toRemove is not a collection, materialize it into a HashSet for O(1) lookups
         if (toRemove is not ICollection<T>)
         {
-            removalSet = [..toRemove];
-        }
+            // Materialize into HashSet for O(1) lookups
+            var removalSet = new HashSet<T>();
+            foreach (T item in toRemove)
+            {
+                removalSet.Add(item);
+            }
 
-        // Perform removal directly or using the HashSet for efficiency
-        foreach (T item in toRemove)
+            // Iterate collection and check HashSet membership (more efficient than iterating toRemove)
+            // Create a list of items to remove to avoid modifying collection during enumeration
+            var itemsToRemove = new List<T>(Math.Min(collection.Count, removalSet.Count));
+            foreach (T item in collection)
+            {
+                if (removalSet.Contains(item))
+                    itemsToRemove.Add(item);
+            }
+            foreach (T item in itemsToRemove)
+            {
+                collection.Remove(item);
+            }
+        }
+        else
         {
-            if (removalSet is null || removalSet.Contains(item))
+            // toRemove is a collection, iterate it directly
+            foreach (T item in toRemove)
             {
                 collection.Remove(item);
             }
