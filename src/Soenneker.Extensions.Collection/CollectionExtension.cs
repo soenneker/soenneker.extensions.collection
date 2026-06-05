@@ -77,7 +77,12 @@ public static class CollectionExtension
             collection.Remove(item);
     }
 
-    /// <inheritdoc cref="RemoveEnumerableFromCollection{T}"/>
+    /// <summary>
+    /// Removes from collection.
+    /// </summary>
+    /// <typeparam name="T">The T type.</typeparam>
+    /// <param name="collection">The collection.</param>
+    /// <param name="toRemove">The to remove.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void RemoveFromCollection<T>(this ICollection<T> collection, params T[] toRemove)
     {
