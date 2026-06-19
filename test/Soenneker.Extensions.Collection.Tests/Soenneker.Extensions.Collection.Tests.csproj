@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Soenneker.Tests.Unit" Version="4.0.1185" />
+        <PackageReference Include="Soenneker.Tests.Unit" Version="4.0.1187" />
         <PackageReference Include="TUnit" Version="1.56.0" />
     </ItemGroup>
 
