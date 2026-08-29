@@ -78,11 +78,11 @@ public static class CollectionExtension
     }
 
     /// <summary>
-    /// Removes from collection.
+    /// Removes every supplied item from the collection using the collection's equality semantics.
     /// </summary>
-    /// <typeparam name="T">The T type.</typeparam>
-    /// <param name="collection">The collection.</param>
-    /// <param name="toRemove">The to remove.</param>
+    /// <typeparam name="T">The sequence element or result type.</typeparam>
+    /// <param name="collection">The collection to mutate.</param>
+    /// <param name="toRemove">The items to remove; absent items are ignored.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void RemoveFromCollection<T>(this ICollection<T> collection, params T[] toRemove)
     {
