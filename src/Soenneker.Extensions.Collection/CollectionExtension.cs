@@ -12,68 +12,44 @@ public static class CollectionExtension
     /// <summary>
     /// Removes all elements in the specified sequence from the target collection.
     /// </summary>
-    /// <remarks>This method efficiently removes all items in the specified sequence from the target
-    /// collection, using optimized strategies for common collection types and sizes. The operation modifies the input
-    /// collection in place. Duplicate elements in the sequence to remove are handled efficiently, and only existing
-    /// items in the collection are affected. No exception is thrown if an element to remove does not exist in the
-    /// collection.</remarks>
+    /// <remarks>The operation modifies the collection in place and removes every matching occurrence. List and hash-set targets use
+    /// optimized removal paths. Other collection types are enumerated before removal so they are not modified during enumeration.</remarks>
     /// <typeparam name="T">The type of elements in the collection.</typeparam>
     /// <param name="collection">The collection from which elements will be removed. If null or empty, no action is taken.</param>
     /// <param name="toRemove">The sequence of elements to remove from the collection. If null or empty, no elements are removed.</param>
-    /// <param name="comparer">An optional equality comparer to use for determining element equality. If null, the default equality comparer
-    /// for the type is used.</param>
+    /// <param name="comparer">An optional equality comparer. When omitted, a hash-set target's comparer is used; other collections use
+    /// <see cref="EqualityComparer{T}.Default"/>.</param>
     public static void RemoveEnumerableFromCollection<T>(this ICollection<T>? collection, IEnumerable<T>? toRemove, IEqualityComparer<T>? comparer = null)
     {
         if (collection is null || collection.Count == 0 || toRemove is null)
             return;
 
-        if (toRemove is ICollection<T> trc && trc.Count == 0)
+        IEqualityComparer<T> effectiveComparer = comparer ?? (collection as HashSet<T>)?.Comparer ?? EqualityComparer<T>.Default;
+        var removalSet = new HashSet<T>(toRemove, effectiveComparer);
+
+        if (removalSet.Count == 0)
             return;
 
-        // Fast-path: target is HashSet<T>
-        if (collection is HashSet<T> targetSet)
-        {
-            if (toRemove is HashSet<T> hs)
-                targetSet.ExceptWith(hs);
-            else
-                targetSet.ExceptWith(toRemove);
-
-            return;
-        }
-
-        // Fast-path: target is List<T>
         if (collection is List<T> list)
         {
-            HashSet<T> set = toRemove as HashSet<T> ?? new HashSet<T>(toRemove, comparer);
-            if (set.Count == 0)
-                return;
-
-            list.RemoveAll(static (item, state) => ((HashSet<T>)state!).Contains(item), set);
+            list.RemoveAll(static (item, state) => ((HashSet<T>)state!).Contains(item), removalSet);
             return;
         }
 
-        // If already deduped, remove directly
-        if (toRemove is HashSet<T> hs2)
+        if (collection is HashSet<T> targetSet)
         {
-            foreach (T item in hs2)
-                collection.Remove(item);
-
+            targetSet.RemoveWhere(removalSet.Contains);
             return;
         }
 
-        // Small remove set: no extra alloc
-        if (toRemove is ICollection<T> c && c.Count <= 32)
+        var matches = new List<T>();
+        foreach (T item in collection)
         {
-            foreach (T item in toRemove)
-                collection.Remove(item);
-
-            return;
+            if (removalSet.Contains(item))
+                matches.Add(item);
         }
 
-        // Dedupe to reduce repeated Remove attempts
-        var removalSet = new HashSet<T>(toRemove, comparer);
-
-        foreach (T item in removalSet)
+        foreach (T item in matches)
             collection.Remove(item);
     }
 

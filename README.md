@@ -5,7 +5,7 @@
 
 # ![](https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png) Soenneker.Extensions.Collection
 
-Helpful Collection extension methods.
+Mutating helpers for removing matching items from `ICollection<T>` and conditionally adding non-null values.
 
 ## Installation
 
@@ -13,17 +13,45 @@ Helpful Collection extension methods.
 dotnet add package Soenneker.Extensions.Collection
 ```
 
-## Quick start
+## Remove multiple values
 
 ```csharp
 using Soenneker.Extensions.Collection;
 
-// Given an existing ICollection<T>? named collection:
-collection.RemoveEnumerableFromCollection(toRemove);
+var names = new List<string> { "Alpha", "Beta", "ALPHA", "Gamma" };
+
+names.RemoveEnumerableFromCollection(
+    ["alpha", "gamma"],
+    StringComparer.OrdinalIgnoreCase);
+
+// names contains only "Beta"
 ```
 
-## Common operations
+`RemoveEnumerableFromCollection()` mutates the target and removes every occurrence that matches any supplied removal value. Missing values are ignored. The removal sequence is materialized before the target changes, so it is safe to pass the same collection as both arguments.
 
-- `RemoveEnumerableFromCollection()` - Removes all elements in the specified sequence from the target collection.
-- `RemoveFromCollection()` - Removes from collection.
-- `AddIfNotNull()` - Adds an item to the collection if the item is not null.
+Equality selection is explicit:
+
+- A supplied `IEqualityComparer<T>` is honored for `List<T>`, `HashSet<T>`, and other `ICollection<T>` implementations.
+- Without one, a `HashSet<T>` target uses its own comparer.
+- Other target types use `EqualityComparer<T>.Default`.
+
+The method creates a `HashSet<T>` of removal values. Lists and hash sets use optimized in-place removal. Other collection types are scanned into a temporary list before removal, avoiding mutation during enumeration and ensuring duplicate matching elements are all removed.
+
+Null or empty target/removal collections are no-ops. A read-only collection still throws from its own `Remove` implementation when a match is found. The method provides no locking; callers must synchronize concurrent mutation.
+
+For a short inline list, `RemoveFromCollection()` is a `params` convenience wrapper:
+
+```csharp
+names.RemoveFromCollection("Beta", "Gamma");
+```
+
+## Add non-null values
+
+```csharp
+var recipients = new List<string>();
+string? optionalAddress = GetAddress();
+
+recipients.AddIfNotNull(optionalAddress);
+```
+
+`AddIfNotNull()` skips a null reference or nullable value and otherwise calls the target collection's `Add`. It does not prevent duplicates, validate the value, or suppress exceptions from a read-only/fixed-size collection. Non-nullable value types are always added, including their default value.
