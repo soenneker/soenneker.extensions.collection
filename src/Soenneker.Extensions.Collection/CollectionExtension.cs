@@ -38,7 +38,11 @@ public static class CollectionExtension
 
         if (collection is HashSet<T> targetSet)
         {
-            targetSet.RemoveWhere(removalSet.Contains);
+            if (targetSet.Comparer.Equals(removalSet.Comparer))
+                targetSet.ExceptWith(removalSet);
+            else
+                targetSet.RemoveWhere(removalSet.Contains);
+
             return;
         }
 
