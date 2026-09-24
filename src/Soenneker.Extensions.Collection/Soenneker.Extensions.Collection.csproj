@@ -43,6 +43,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Soenneker.Extensions.List" Version="4.0.992" />
+        <PackageReference Include="Soenneker.Extensions.List" Version="4.0.994" />
     </ItemGroup>
 </Project>
