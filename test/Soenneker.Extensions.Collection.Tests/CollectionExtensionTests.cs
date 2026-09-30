@@ -7,7 +7,7 @@ namespace Soenneker.Extensions.Collection.Tests;
 public class CollectionExtensionTests : UnitTest
 {
     [Test]
-    public async System.Threading.Tasks.Task RemoveEnumerable_HonorsComparerAcrossCollectionTypes()
+    public async System.Threading.Tasks.ValueTask RemoveEnumerable_HonorsComparerAcrossCollectionTypes()
     {
         var set = new HashSet<string>(System.StringComparer.Ordinal) { "Alpha", "Beta" };
         set.RemoveEnumerableFromCollection(["alpha"], System.StringComparer.OrdinalIgnoreCase);
