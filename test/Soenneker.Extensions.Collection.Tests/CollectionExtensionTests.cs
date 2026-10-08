@@ -1,13 +1,14 @@
 using Soenneker.Tests.Unit;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading;
 
 namespace Soenneker.Extensions.Collection.Tests;
 
 public class CollectionExtensionTests : UnitTest
 {
     [Test]
-    public async System.Threading.Tasks.ValueTask RemoveEnumerable_HonorsComparerAcrossCollectionTypes()
+    public async System.Threading.Tasks.ValueTask RemoveEnumerable_HonorsComparerAcrossCollectionTypes(CancellationToken cancellationToken)
     {
         var set = new HashSet<string>(System.StringComparer.Ordinal) { "Alpha", "Beta" };
         set.RemoveEnumerableFromCollection(["alpha"], System.StringComparer.OrdinalIgnoreCase);
