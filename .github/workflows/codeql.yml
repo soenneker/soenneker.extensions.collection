@@ -12,6 +12,8 @@ on:
   workflow_dispatch:
 
 env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  DOTNET_NOLOGO: '1'
   NUGET_XMLDOC_MODE: skip
 
 permissions:
